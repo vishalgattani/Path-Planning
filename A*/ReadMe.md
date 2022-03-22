@@ -1,15 +1,15 @@
 # Instructions to Run:
 
 ## Libraries:
-import numpy as np
-import matplotlib as mpl
-import matplotlib.pyplot as plt
-from matplotlib.patches import Polygon
-import matplotlib.patches as mpatches
-import math
-import sys
-import timeit
-import matplotlib.path as mplPath
+- import numpy as np
+- import matplotlib as mpl
+- import matplotlib.pyplot as plt
+- from matplotlib.patches import Polygon
+- import matplotlib.patches as mpatches
+- import math
+- import sys
+- import timeit
+- import matplotlib.path as mplPath
 
 ## Code
 
