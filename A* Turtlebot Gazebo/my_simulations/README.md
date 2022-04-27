@@ -1,13 +1,15 @@
 # A* Algorithm on Turtlebot 
 
-## Instructions
-
 1. Download the `my_simulations` ROS package into your `catkin_ws/src` folder.
 2. Run the following commands
 
 	```sh
 	cd ~/<your catkin workspace>/
+	cd src/my_simulations/scripts
+	chmod +x ros.py
+	cd ~/<your catkin workspace>/
 	catkin_make
+	source ~/<your catkin workspace>/devel/setup.bash
 	roslaunch my_simulations astar.launch
 	```
 
