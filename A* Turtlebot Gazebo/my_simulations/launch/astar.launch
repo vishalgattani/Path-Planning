@@ -25,7 +25,8 @@
         name="talker" 
         type="ros.py" 
         output="screen" 
-        args = "$(arg x_pos) $(arg y_pos) $(arg theta) $(arg x_pos_f) $(arg y_pos_f) $(arg clearance) $(arg rpm1) $(arg rpm2)"/>
+        args = "$(arg x_pos) $(arg y_pos) $(arg theta) $(arg x_pos_f) $(arg y_pos_f) $(arg clearance) $(arg rpm1) $(arg rpm2)"
+  />
 
   <param name="robot_description" command="$(find xacro)/xacro --inorder $(find turtlebot3_description)/urdf/turtlebot3_$(arg model).urdf.xacro" />
 
