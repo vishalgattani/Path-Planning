@@ -18,7 +18,7 @@
 Default arguments in the launch file are as follows:
 
 ```xml
-	<arg name="model" default="burger" doc="model type [burger, waffle, waffle_pi]"/>
+  <arg name="model" default="burger" doc="model type [burger, waffle, waffle_pi]"/>
   <arg name="x_pos" default="-4"/>
   <arg name="y_pos" default="-4"/>
   <arg name="z_pos" default="0"/>
