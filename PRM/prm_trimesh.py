@@ -127,10 +127,25 @@ print("Mesh extent: ",mesh.extents)
 
 print("Point Cloud of ",num_points," Sampled Points")
 points = mesh.bounding_box_oriented.sample_volume(count=num_points)
+printVar(points)
+
+startpoint = [0,0.5,-3.0] # blender y is -z
+goalpoint = [0,10.0,0] # blender z is y
+
+# MAKE UAV FLY TO START FROM SPAWN 
+
+arr = np.asarray([startpoint,goalpoint])
+points = np.concatenate((arr,points))
+printVar(arr)
+
 index = (points / pitch).round().astype(int)
-pcd = trimesh.points.PointCloud(points,colors=[[0,0,0,64] for i in points])
+pcd = trimesh.points.PointCloud(points[2:],colors=[[0,0,0,64] for i in points[2:]])
+initialpoints = trimesh.points.PointCloud(points[0:2],colors=[[0,0,255,255] for i in points[0:2]])
 
 
+scene.add_geometry([pcd,initialpoints])
+# scene.show()
+sys.exit()
 
 createPCD = True
 if createPCD:
@@ -270,8 +285,6 @@ for edge in edges:
     voxeltomesh_scene.add_geometry(path)
     # ax.plot3D([edge.start[0],edge.end[0]], [edge.start[1],edge.end[1]], [edge.start[2],edge.end[2]], 'red')
 
-for i in range(len(nodes)):
-    print(i,nodes[i].get_numEdges())
 
 # your_mesh = stlmesh.Mesh.from_file('test.stl')
 # ax.add_collection3d(mplot3d.art3d.Poly3DCollection(your_mesh.vectors))
