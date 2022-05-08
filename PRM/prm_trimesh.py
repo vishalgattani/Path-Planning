@@ -135,17 +135,21 @@ goalpoint = [0,10.0,0] # blender z is y
 # MAKE UAV FLY TO START FROM SPAWN 
 
 arr = np.asarray([startpoint,goalpoint])
+print("Start conditions:")
+print("Start point \t:",arr[0])
+print("Goal point \t:",arr[1])
+
 points = np.concatenate((arr,points))
-printVar(arr)
+
 
 index = (points / pitch).round().astype(int)
 pcd = trimesh.points.PointCloud(points[2:],colors=[[0,0,0,64] for i in points[2:]])
-initialpoints = trimesh.points.PointCloud(points[0:2],colors=[[0,0,255,255] for i in points[0:2]])
+initialpoints = trimesh.points.PointCloud(points[0:2],colors=[[0,255,0,255] for i in points[0:2]])
 
 
 scene.add_geometry([pcd,initialpoints])
 # scene.show()
-sys.exit()
+# sys.exit()
 
 createPCD = True
 if createPCD:
@@ -170,7 +174,6 @@ if voxelize:
     # print(mesh_voxels.points.shape)
     # print("2 Filled", mesh_voxels.filled_count)
 
-
 # print("Creating Ray Object...")
 # ray_inter = ray_pyembree.RayMeshIntersector(mesh)
 # print(ray_inter)
@@ -187,12 +190,12 @@ if voxelize:
             # print("NOT Filled")
             outpoints.append(i)
     if createPCD:
-        pcd1 = trimesh.points.PointCloud(inpoints,colors=[[255,0,0,255] for i in inpoints])
+        pcd1 = trimesh.points.PointCloud(inpoints,colors=[[255,0,0,64] for i in inpoints])
         scene.add_geometry(pcd1)
         voxeltomesh_scene.add_geometry(pcd1)
-        pcd2 = trimesh.points.PointCloud(outpoints,colors=[[0,255,0,255] for i in outpoints])
+        pcd2 = trimesh.points.PointCloud(outpoints,colors=[[0,0,0,64] for i in outpoints])
         scene.add_geometry(pcd2)
-        voxeltomesh_scene.add_geometry(pcd2)
+        voxeltomesh_scene.add_geometry([pcd2,initialpoints])
         
 
 
@@ -201,8 +204,7 @@ if voxelize:
 
 
 mesh_voxels_center_points = mesh_voxels.points
-voxelizedMesh = trimesh.voxel.ops.multibox(mesh_voxels_center_points, pitch=pitch, colors=(0,0,255,128))
-# printVar(voxelizedMesh)
+voxelizedMesh = trimesh.voxel.ops.multibox(mesh_voxels_center_points, pitch=pitch, colors=(0,0,255,64))
 voxeltomesh_scene.add_geometry(voxelizedMesh)
 # voxeltomesh_scene.show()
 
