@@ -127,7 +127,7 @@ print("Mesh extent: ",mesh.extents)
 
 print("Point Cloud of ",num_points," Sampled Points")
 points = mesh.bounding_box_oriented.sample_volume(count=num_points)
-printVar(points)
+# printVar(points)
 
 startpoint = [0,0.5,-3.0] # blender y is -z
 goalpoint = [0,10.0,0] # blender z is y
@@ -286,6 +286,9 @@ for edge in edges:
     trimesh.visual.color.ColorVisuals(mesh=path, vertex_colors=[255,0,0,255])
     voxeltomesh_scene.add_geometry(path)
     # ax.plot3D([edge.start[0],edge.end[0]], [edge.start[1],edge.end[1]], [edge.start[2],edge.end[2]], 'red')
+
+for i in range(0,len(arr)):
+    print(i,nodes[i],nodes[i].get_numEdges())
 
 
 # your_mesh = stlmesh.Mesh.from_file('test.stl')
