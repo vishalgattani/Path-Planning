@@ -26,14 +26,14 @@ from pykdtree.kdtree import KDTree as pyKDTree
 
 # parameter
 N_KNN = 10  # number of edge from one sampled point
-MAX_EDGE_LEN = 50.0  # [m] Maximum edge length
+MAX_EDGE_LEN = 2.5  # [m] Maximum edge length
 minDist = 0.1
 maxDist = MAX_EDGE_LEN
 
 
 pitch = 0.2
 # 50,100,200,250,400,500
-num_points = 25   
+num_points = 1000   
 file_obj = "test.obj"
 
 
@@ -105,12 +105,14 @@ col = np.asarray([0,0,0,255],dtype=np.uint8)
 origin.vertices_color = col
 scene.add_geometry(origin)
 
+voxeltomesh_scene = trimesh.Scene([])
+
 
 
 
 print("Loading ",file_obj,"...")
 mesh = trimesh.load(file_obj) # with plane to increase the bounding box
-# scene.add_geometry(mesh)
+scene.add_geometry(mesh)
 
 print("Mesh bounds: ",mesh.bounds)  
 print("Min Bound: ",mesh.bounds[0])
@@ -150,9 +152,9 @@ if voxelize:
     # print("2 Filled", mesh_voxels.filled_count)
 
 
-print("Creating Ray Object...")
-ray_inter = ray_pyembree.RayMeshIntersector(mesh)
-print(ray_inter)
+# print("Creating Ray Object...")
+# ray_inter = ray_pyembree.RayMeshIntersector(mesh)
+# print(ray_inter)
 # rtrace = ray_inter.intersects_location(starts, ends, multiple_hits=False)
 
 if voxelize:
@@ -175,7 +177,15 @@ if voxelize:
     print("Inside voxels\t:",len(inpoints))
 
 
+mesh_voxels_center_points = mesh_voxels.points
 
+# printVar(mesh_voxels_center_points)
+
+voxelizedMesh = trimesh.voxel.ops.multibox(mesh_voxels_center_points, pitch=pitch, colors=None)
+printVar(voxelizedMesh)
+voxeltomesh_scene.add_geometry(voxelizedMesh)
+voxeltomesh_scene.show()
+sys.exit()
 
 nodes = []
 # nodes.append(startnode)
@@ -202,6 +212,8 @@ for i in range(n_sample):
 
 
 
+
+
 print("Generating all possible free paths with MAX_EDGE_LEN ",MAX_EDGE_LEN,"...")
 for i in range(len(nodes)):
     for j in range(i,len(nodes)):
@@ -216,6 +228,7 @@ for i in range(len(nodes)):
             if len(locations)==0:
                 # print(nodes[i],"  ",nodes[j],"\tN")
                 possibleEdge = Edge(nodes[i],nodes[j],euclideanDist)
+                #if points along edge not inside voxel:
                 edges.append(possibleEdge)    
 
             
@@ -231,30 +244,23 @@ for edge in edges:
     # printVar(path)
     trimesh.visual.color.ColorVisuals(mesh=path, vertex_colors=[255,0,0,255])
     scene.add_geometry(path)
-    ax.plot3D([edge.start[0],edge.end[0]], [edge.start[1],edge.end[1]], [edge.start[2],edge.end[2]], 'red')
+    # ax.plot3D([edge.start[0],edge.end[0]], [edge.start[1],edge.end[1]], [edge.start[2],edge.end[2]], 'red')
 
-your_mesh = stlmesh.Mesh.from_file('test.stl')
-ax.add_collection3d(mplot3d.art3d.Poly3DCollection(your_mesh.vectors))
-# Auto scale to the mesh size
-# scale = your_mesh.points.flatten(-1)
-# ax.auto_scale_xyz(scale, scale, scale)
-ax.view_init(-90, 90)
+# your_mesh = stlmesh.Mesh.from_file('test.stl')
+# ax.add_collection3d(mplot3d.art3d.Poly3DCollection(your_mesh.vectors))
+# # Auto scale to the mesh size
+# # scale = your_mesh.points.flatten(-1)
+# # ax.auto_scale_xyz(scale, scale, scale)
+# ax.view_init(-90, 90)
 
-ax.set_xlabel('x')
-ax.set_ylabel('y')
-ax.set_zlabel('z')
-plt.show()
+# ax.set_xlabel('x')
+# ax.set_ylabel('y')
+# ax.set_zlabel('z')
+# plt.show()
 
-
-
-# # rotate the axes and update
-# for angle in range(0, 360):
-#     ax.view_init(30, angle)
-#     plt.draw()
-#     plt.pause(.001)
 
 
 scene.show()
-
+# plt.close()
 sys.exit()
 
