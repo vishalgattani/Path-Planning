@@ -14,7 +14,7 @@ from trimesh.voxel import creation
 import matplotlib.pyplot as plt
 import math
 
-from stl import mesh
+from stl import mesh as stlmesh
 
 from mpl_toolkits import mplot3d
 
@@ -26,14 +26,14 @@ from pykdtree.kdtree import KDTree as pyKDTree
 
 # parameter
 N_KNN = 10  # number of edge from one sampled point
-MAX_EDGE_LEN = 5.0  # [m] Maximum edge length
+MAX_EDGE_LEN = 50.0  # [m] Maximum edge length
 minDist = 0.1
 maxDist = MAX_EDGE_LEN
 
 
 pitch = 0.2
 # 50,100,200,250,400,500
-num_points = 500    
+num_points = 25   
 file_obj = "test.obj"
 
 
@@ -178,8 +178,8 @@ if voxelize:
 
 
 nodes = []
-nodes.append(startnode)
-nodes.append(goalnode)
+# nodes.append(startnode)
+# nodes.append(goalnode)
 
 edges = []
 road_map = []
@@ -221,7 +221,7 @@ for i in range(len(nodes)):
             
 print("Total edges possible = ",len(edges))
 
-print("Joining ",len(edges)," edges for visualization...")
+print("Joining",len(edges),"edges for visualization...")
 for edge in edges:
     edge.start
     segments = np.vstack((edge.start,edge.end))
@@ -231,148 +231,30 @@ for edge in edges:
     # printVar(path)
     trimesh.visual.color.ColorVisuals(mesh=path, vertex_colors=[255,0,0,255])
     scene.add_geometry(path)
-    ax.plot3D([edge.start[0],edge.end[0]], [edge.start[1],edge.end[1]], [edge.start[2],edge.end[2]], 'gray')
+    ax.plot3D([edge.start[0],edge.end[0]], [edge.start[1],edge.end[1]], [edge.start[2],edge.end[2]], 'red')
+
+your_mesh = stlmesh.Mesh.from_file('test.stl')
+ax.add_collection3d(mplot3d.art3d.Poly3DCollection(your_mesh.vectors))
+# Auto scale to the mesh size
+# scale = your_mesh.points.flatten(-1)
+# ax.auto_scale_xyz(scale, scale, scale)
+ax.view_init(-90, 90)
+
+ax.set_xlabel('x')
+ax.set_ylabel('y')
+ax.set_zlabel('z')
+plt.show()
+
+
+
+# # rotate the axes and update
+# for angle in range(0, 360):
+#     ax.view_init(30, angle)
+#     plt.draw()
+#     plt.pause(.001)
+
 
 scene.show()
 
-plt.show()
 sys.exit()
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-print("Building KDTree for sampled points...")
-sample_kd_tree = KDTree(np.vstack((sample_x, sample_y, sample_z)).T)
-print("Built KDTree!")
-
-for (i, ix, iy, iz) in zip(range(n_sample), sample_x, sample_y, sample_z):
-        dists, indexes = sample_kd_tree.query([ix, iy, iz], k=n_sample)
-        edge_id = []
-        for ii in range(1, len(indexes)):
-            nx = sample_x[indexes[ii]]
-            ny = sample_y[indexes[ii]]
-            nz = sample_z[indexes[ii]]
-            
-
-        road_map.append(edge_id)
-
-
-
-
-
-
-
-printVar(mesh_voxels)
-print()
-printVar(mesh_voxels.shape)
-print()
-printVar(mesh_voxels.volume)
-print()
-printVar(mesh_voxels.points)
-print()
-printVar(mesh_voxels.points_to_indices(points))
-print()
-printVar(mesh_voxels.translation)
-print()
-
-
-newpts = []
-
-truecount = 0
-falsecount = 0
-for i in points:
-    if(mesh_voxels.is_filled(i)):
-        truecount+=1
-    else:
-        falsecount+=1
-        newpts.append(i)
-
-print(truecount,falsecount,truecount+falsecount)
-# trimesh.collision.scene_to_collision(scene)
-
-
-newptscloud = trimesh.points.PointCloud(newpts)
-newptscloud.vertices_color = (0,1,0,0.5)
-# scene.add_geometry(newptscloud)
-
-
-
-truecount = 0
-falsecount = 0
-for i in newpts:
-    if(mesh_voxels.is_filled(i)):
-        truecount+=1
-    else:
-        falsecount+=1
-
-print(truecount,falsecount,truecount+falsecount)
-
-# for i in mesh_voxels.points:
-#     print(i)
-
-
-createPCD = False
-if createPCD:
-    points = mesh.bounding_box_oriented.sample_volume(count=num_points)
-    newptscloud = trimesh.points.PointCloud(points)
-    newptscloud_col = np.array([trimesh.visual.random_color() for i in point])
-    newptscloud.vertices_color = newptscloud_col
-
-
-    inpoints = []
-    outpoints = []
-    for i in newptscloud:
-        if mesh_voxels.is_filled(i):
-            # print("Filled")
-            inpoints.append(i)
-        else:
-            # print("NOT Filled")
-            outpoints.append(i)
-
-    col = np.asarray([0,255,0,0],dtype=np.uint8)
-    newptscloud = trimesh.points.PointCloud(outpoints)
-    newptscloud_col = np.array([col for i in outpoints])
-    newptscloud.vertices_color = newptscloud_col
-    scene.add_geometry(newptscloud)
-
-    col = np.asarray([255,0,0,0],dtype=np.uint8)
-    newptscloud = trimesh.points.PointCloud(inpoints)
-    newptscloud_col = np.array( [col for i in inpoints])
-    newptscloud.vertices_color = newptscloud_col
-    # scene.add_geometry(newptscloud)
-
-
-scene.show()
-
-# parameters
-
-N_SAMPLE = 5000  # number of sample_points
-N_KNN = 10  # number of edge from one sampled point
-MAX_EDGE_LEN = 1.0  # [m] Maximum edge length
