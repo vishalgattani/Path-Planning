@@ -68,11 +68,15 @@ class Node:
         self.z = z
         self.cost = cost
         self.parent_index = parent_index
+        self.numEdges = 0
 
     def __str__(self):
         return str(self.x)+","+str(self.y)+","+str(self.z)#+","+str(self.cost) + "," + str(self.parent_index)
 
-
+    def set_numEdges(self,num):
+        self.numEdges = num
+    def get_numEdges(self):
+        return self.numEdges
 
 def as_mesh(scene_or_mesh):
     """
@@ -110,7 +114,7 @@ voxeltomesh_scene = trimesh.Scene([])
 
 
 
-print("Loading ",file_obj,"...")
+print("Loading",file_obj,"...")
 mesh = trimesh.load(file_obj) # with plane to increase the bounding box
 scene.add_geometry(mesh)
 
@@ -170,22 +174,31 @@ if voxelize:
     if createPCD:
         pcd1 = trimesh.points.PointCloud(inpoints,colors=[[255,0,0,255] for i in inpoints])
         scene.add_geometry(pcd1)
+        voxeltomesh_scene.add_geometry(pcd1)
         pcd2 = trimesh.points.PointCloud(outpoints,colors=[[0,255,0,255] for i in outpoints])
         scene.add_geometry(pcd2)
+        voxeltomesh_scene.add_geometry(pcd2)
+        
+
 
     print("Outside voxels\t:",len(outpoints))
     print("Inside voxels\t:",len(inpoints))
 
 
 mesh_voxels_center_points = mesh_voxels.points
-
-# printVar(mesh_voxels_center_points)
-
-voxelizedMesh = trimesh.voxel.ops.multibox(mesh_voxels_center_points, pitch=pitch, colors=None)
-printVar(voxelizedMesh)
+voxelizedMesh = trimesh.voxel.ops.multibox(mesh_voxels_center_points, pitch=pitch, colors=(0,0,255,128))
+# printVar(voxelizedMesh)
 voxeltomesh_scene.add_geometry(voxelizedMesh)
-voxeltomesh_scene.show()
-sys.exit()
+# voxeltomesh_scene.show()
+
+
+
+
+
+
+
+
+# PRM begins here
 
 nodes = []
 # nodes.append(startnode)
@@ -210,29 +223,40 @@ for i in range(n_sample):
             outnodes.append(node)
             nodes.append(node)
 
-
-
-
-
-print("Generating all possible free paths with MAX_EDGE_LEN ",MAX_EDGE_LEN,"...")
+print("Generating all possible free paths with MAX_EDGE_LEN",MAX_EDGE_LEN,"...")
+start_time = time.time()
+edgeCountMax = 0
 for i in range(len(nodes)):
+    edgeCount = 0
+    nodeiedges = []
     for j in range(i,len(nodes)):
-        diff_x = nodes[i].x - nodes[j].x
-        diff_y = nodes[i].y - nodes[j].y
-        diff_z = nodes[i].z - nodes[j].z
-        euclideanDist = math.sqrt(diff_x**2 + diff_y**2 + diff_z**2)
-        if euclideanDist >= minDist and euclideanDist <= maxDist:
-            ray_origins = np.array([[nodes[i].x,nodes[i].y,nodes[i].z]])
-            ray_directions = np.array([[-diff_x,-diff_y,-diff_z]])
-            locations, index_ray, index_tri = mesh.ray.intersects_location(ray_origins=ray_origins,ray_directions=ray_directions)
-            if len(locations)==0:
-                # print(nodes[i],"  ",nodes[j],"\tN")
-                possibleEdge = Edge(nodes[i],nodes[j],euclideanDist)
-                #if points along edge not inside voxel:
-                edges.append(possibleEdge)    
-
-            
-print("Total edges possible = ",len(edges))
+        # while(edgeCount<=N_KNN):
+            # print(edgeCount)
+            diff_x = nodes[i].x - nodes[j].x
+            diff_y = nodes[i].y - nodes[j].y
+            diff_z = nodes[i].z - nodes[j].z
+            euclideanDist = math.sqrt(diff_x**2 + diff_y**2 + diff_z**2)
+            if euclideanDist >= minDist and euclideanDist <= maxDist:
+                ray_origins = np.array([[nodes[i].x,nodes[i].y,nodes[i].z]])
+                ray_directions = np.array([[-diff_x,-diff_y,-diff_z]])
+                locations, index_ray, index_tri = voxelizedMesh.ray.intersects_location(ray_origins=ray_origins,ray_directions=ray_directions)
+                if len(locations)==0:
+                    # print(nodes[i],"  ",nodes[j],"\tN")
+                    possibleEdge = Edge(nodes[i],nodes[j],euclideanDist)
+                    #if points along edge not inside voxelizedMesh:
+                    edges.append(possibleEdge)
+                    nodeiedges.append(possibleEdge)
+                    nodes[i].set_numEdges(len(nodeiedges))
+                    # print(i,nodes[i].get_numEdges())
+                    # edgeCount+=1
+                    if(len(nodeiedges)>=N_KNN):
+                        edgeCountMax = len(nodeiedges)
+                        break
+                    
+print("Max Edges from a possible node",edgeCountMax)
+print("--- %s seconds ---" % (time.time() - start_time))
+print("Finished creating",len(edges),"...")            
+print("Total edges possible =",len(edges))
 
 print("Joining",len(edges),"edges for visualization...")
 for edge in edges:
@@ -243,8 +267,11 @@ for edge in edges:
     # path.vertices_color = col
     # printVar(path)
     trimesh.visual.color.ColorVisuals(mesh=path, vertex_colors=[255,0,0,255])
-    scene.add_geometry(path)
+    voxeltomesh_scene.add_geometry(path)
     # ax.plot3D([edge.start[0],edge.end[0]], [edge.start[1],edge.end[1]], [edge.start[2],edge.end[2]], 'red')
+
+for i in range(len(nodes)):
+    print(i,nodes[i].get_numEdges())
 
 # your_mesh = stlmesh.Mesh.from_file('test.stl')
 # ax.add_collection3d(mplot3d.art3d.Poly3DCollection(your_mesh.vectors))
@@ -260,7 +287,7 @@ for edge in edges:
 
 
 
-scene.show()
+voxeltomesh_scene.show()
 # plt.close()
 sys.exit()
 
